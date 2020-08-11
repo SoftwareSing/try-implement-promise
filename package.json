@@ -4,11 +4,18 @@
   "description": "我以為我懂 Promise",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "test": "promises-aplus-tests testAdapter.js"
   },
   "author": "SoftwareSing",
   "license": "UNLICENSED",
   "devDependencies": {
+    "eslint": "^7.6.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
     "promises-aplus-tests": "^2.1.2"
   }
 }
