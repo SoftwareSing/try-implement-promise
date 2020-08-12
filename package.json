@@ -2,7 +2,7 @@
   "name": "try-implement-promise",
   "version": "1.0.0",
   "description": "我以為我懂 Promise",
-  "main": "index.js",
+  "main": "MyPromise.js",
   "scripts": {
     "lint": "eslint .",
     "test": "promises-aplus-tests testAdapter.js"
