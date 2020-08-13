@@ -101,7 +101,7 @@ class ChildPromise {
     }
 
     try {
-      const result = onFulfilled(undefined, value)
+      const result = onFulfilled(value)
       resolve(result)
     } catch (err) {
       reject(err)
