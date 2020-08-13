@@ -1,6 +1,7 @@
 # try implement promise
 
-我以為我懂 Promise
+~~我以為我懂 Promise~~  
+現在我應該懂 Promise 了
 
 ## 參考資源
 
