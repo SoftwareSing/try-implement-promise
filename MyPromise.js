@@ -6,6 +6,8 @@ const STATUS = Symbol('PromiseStatus')
 const CHILDPROMISES = Symbol('ChildPromises')
 const VALUE = Symbol('PromiseValue')
 const REASON = Symbol('PromiseReason')
+const RESOLVE = Symbol('PromiseResolve')
+const REJECT = Symbol('PromiseReject')
 
 class MyPromise {
   constructor (executor) {
@@ -13,7 +15,7 @@ class MyPromise {
     this[CHILDPROMISES] = []
     this[VALUE] = undefined
 
-    const resolve = (value) => {
+    this[RESOLVE] = (value) => {
       if (this[STATUS] !== pending) {
         return
       }
@@ -27,7 +29,7 @@ class MyPromise {
       this[CHILDPROMISES] = undefined
     }
 
-    const reject = (reason) => {
+    this[REJECT] = (reason) => {
       if (this[STATUS] !== pending) {
         return
       }
@@ -41,7 +43,7 @@ class MyPromise {
       this[CHILDPROMISES] = undefined
     }
 
-    executor(resolve, reject)
+    executor(this[RESOLVE], this[REJECT])
   }
 
   then (onFulfilled, onRejected) {
@@ -94,32 +96,79 @@ class ChildPromise {
   }
 
   _runOnFulfilled (value) {
-    const { resolve, reject, onFulfilled } = this
+    const { promise, resolve, reject, onFulfilled } = this
     if (typeof onFulfilled !== 'function') {
       resolve(value)
       return
     }
 
     try {
-      const result = onFulfilled(value)
-      resolve(result)
+      const x = onFulfilled(value)
+      promiseResolutionProcedure(promise, x)
     } catch (err) {
       reject(err)
     }
   }
 
   _runOnRejected (reason) {
-    const { resolve, reject, onRejected } = this
+    const { promise, reject, onRejected } = this
     if (typeof onRejected !== 'function') {
       reject(reason)
       return
     }
 
     try {
-      const result = onRejected(reason)
-      resolve(result)
+      const x = onRejected(reason)
+      promiseResolutionProcedure(promise, x)
     } catch (err) {
       reject(err)
+    }
+  }
+}
+
+/**
+ * 2.3 The Promise Resolution Procedure
+ * @param {MyPromise} promise
+ * @param {Any} x
+ * @return {void}
+ */
+function promiseResolutionProcedure (promise, x) {
+  if (promise === x) {
+    promise[REJECT](new TypeError('2.3.1 If promise and x refer to the same object, reject promise with a TypeError as the reason.'))
+    return
+  }
+
+  if (x === null || (typeof x !== 'function' && typeof x !== 'object')) {
+    promise[RESOLVE](x)
+    return
+  }
+
+  let called = false
+  try {
+    const then = x.then
+    if (typeof then !== 'function') {
+      promise[RESOLVE](x)
+      return
+    }
+
+    const resolvePromise = (y) => {
+      if (called) {
+        return
+      }
+      called = true
+      promiseResolutionProcedure(promise, y)
+    }
+    const rejectPromise = (r) => {
+      if (called) {
+        return
+      }
+      called = true
+      promise[REJECT](r)
+    }
+    then.call(x, resolvePromise, rejectPromise)
+  } catch (e) {
+    if (!called) {
+      promise[REJECT](e)
     }
   }
 }
